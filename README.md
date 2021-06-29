@@ -16,9 +16,9 @@ Hello，大家好，我是和光不同尘，一个你肯定还没有听说过的
 
 好吧，大概这就是我这个菜鸡和人家高级前端的差距吧
 
-# 一、基础打包
-
 废话不多说，我们这就操练起来
+
+# 一、基础打包
 
 第一部分先带大家回忆一下 `webpack` 的基础打包流程，我知道这些大家肯定都会的，我只是带大家回忆一下
 
@@ -189,7 +189,7 @@ const isInclude = ["a", "b", "c"].includes("a");
 console.log(isInclude);
 ```
 
-再次运行打包命令，`dist` 目录下生成了 `index.html` 和 `main.js` 两个文件，使用 `vsCode` 的 `live server` 插件或其他能够在本地开启静态资源服务器的工具打开 `index.html` 文件
+再次运行打包命令，`dist` 目录下生成了 `index.html` 和 `main.js` 两个文件，使用 `VSCode` 的 `live server` 插件或其他能够在本地开启静态资源服务器的工具打开 `index.html` 文件
 
 打开控制台，可以看到在控制台成功输入了预期的结果：
 
@@ -206,15 +206,14 @@ true;
 现在的项目结构如下：
 
 ```
-webapck5-ts-vue
+webpack5-ts-vue
 ├── src
-|   └── index.ts
-├── .gitignore
+│   └── index.ts
 ├── index.html
 ├── package-lock.json
 ├── package.json
-├── tsconfig.json
-└── webpack.config.js
+├── webpack.config.js
+└── tsconfig.json
 ```
 
 # 二、开发服务器
@@ -225,18 +224,22 @@ webapck5-ts-vue
 npm i webpack-dev-server -D
 ```
 
-在 webpack.config.js 添加配置：
+在 `webpack.config.js` 添加配置：
 
 ```js
 module.exports = {
+  // ...
+  // webpack升级到5.0后，target默认值值会根据package.json中的browserslist改变，导致devServer的自动更新失效，所以development环境下直接配置成web
+  target: "web",
   devServer: {
     hot: true, // 启用热模块替换
     open: true, // 打开默认浏览器
   },
+  // ...
 };
 ```
 
-在 package.json 中添加脚本：
+在 `package.json` 中添加脚本：
 
 ```json
 {
@@ -246,20 +249,20 @@ module.exports = {
 }
 ```
 
-这样我们运行`npm run serve`开发命令后，默认浏览器就会自动打开，当我们修改了文件的内容时，浏览器也会自动刷新
+这样我们运行 `npm run serve` 开发命令后，默认浏览器会自动打开，当我们修改了文件的内容时，浏览器也会自动刷新
 
-这里我们详细解释一下在实际开发中非常常用的 `devServer` 配置项 `proxy`，它的作用是设置代理，解决开发环境中的跨域问题
+这里我们详细解释一下在实际开发中非常常用的 `proxy` 配置项，它的作用是设置代理，解决开发环境中的跨域问题
 
-其原理是将我们本地发出的请求通过一个代理中间服务器，再发送到真正的接口服务器，而服务器之间的通信是没有跨域问题的
+其原理是将我们本地发出的请求通过一个中间代理服务器，转发到真正的接口服务器，服务器之间的通信是没有跨域问题的
 
-`proxy` 的常用配置项如下：
+`proxy` 常用配置项如下：
 
 ```json
 {
+  // ...
   "proxy": {
     "/api": {
       // 需要代理到的真实目标服务器，如/api/user会被代理到https://www.juejin.cn/api/user
-      // 需要
       "target": "https://www.juejin.cn",
       // 是否更改代理后请求的headers中host地址，某些安全级别较高的服务器会对此做校验
       "changeOrigin": true,
@@ -276,7 +279,7 @@ module.exports = {
 
 # 三、配置文件拆分
 
-为了更能符合我们企业级项目开发环境搭建的目标，我们现在来对 `webpack` 配置文件进行环境拆分
+为了更能体现我们企业级项目开发环境搭建的目标，现在来对 `webpack` 的配置文件进行环境拆分
 
 删除原来的 `webpack.config.js` 文件，新建 `config` 文件夹，新建 `webpack.base.js` 、 `webpack.dev.js` 和 `webpack.prod.js` 三个文件，并安装合并配置文件需要使用的依赖：
 
@@ -320,6 +323,7 @@ const baseConfig = require("./webpack.base.js");
 
 module.exports = merge(baseConfig, {
   mode: "development",
+  target: "web",
   devServer: {
     hot: true,
     open: true,
@@ -352,27 +356,27 @@ module.exports = merge(baseConfig, {
 
 这样就简单地对配置文件进行了环境上的区分，后续的各种工作只不过是根据不同的需求在不同的配置文件中添加配置而已，当然实际项目中的配置文件要比案例中复杂的多
 
-需要注意的是，配置文件中的路径并没有因为将配置文件放进更深一层的 `config` 文件夹而修改，这是因 在 `webpack` 配置文件中有一个 context 属性，该属性用来解析入口（entry point）和加载器（loader），其默认值是 webpack 的启动目录，一般就是项目的根目录
+需要注意的是，配置文件中的路径并没有因为将配置文件放进更深一层的 `config` 文件夹而修改，这是因在 `webpack` 配置中有一个 `context` 属性，该属性用来解析入口（entry point）和加载器（loader），其默认值是 `webpack` 的启动目录，一般就是项目的根目录
 
 # 四、打包各类文件
 
-webpack 是一个 js 文件打包工具，其他类型的文件一般都需要通过额外的加载器（loader）来实现解析和打包
+`webpack` 是一个 `js` 文件打包工具，其他类型的文件一般都需要通过额外的加载器（loader）来实现解析和打包
 
 ## vue
 
-安装 vue ：
+安装 `vue3` ：
 
 ```cmd
 npm i vue@next -S
 ```
 
-安装 vue-loader：
+安装 `vue-loader` ：
 
 ```cmd
 npm install vue-loader -D
 ```
 
-在 src 文件夹下新建 App.vue 文件：
+在 `src` 文件夹下新建 `App.vue` 文件：
 
 ```ts
 <template>
@@ -382,7 +386,7 @@ npm install vue-loader -D
 import { defineComponent } from "vue";
 export default defineComponent({
   setup() {
-    const name: string = "和光不同尘";
+    const name = "和光不同尘";
     return {
       name,
     };
@@ -391,7 +395,7 @@ export default defineComponent({
 </script>
 ```
 
-修改 index.ts：
+修改 `index.ts` ：
 
 ```js
 import { createApp } from "vue";
@@ -400,7 +404,7 @@ import App from "./App.vue";
 createApp(App).mount("#app");
 ```
 
-修改 webpack.common.js ：
+修改 `webpack.base.js` ：
 
 ```js
 module.exports = {
@@ -421,7 +425,7 @@ module.exports = {
 npm i @vue/compiler-sfc -D
 ```
 
-另外，还需要配置对应的 vue 插件：
+另外，还需要配置对应的 `vue` 插件：
 
 ```js
 const { VueLoaderPlugin } = require("vue-loader");
@@ -448,24 +452,26 @@ module.exports = {
 };
 ```
 
-这样.vue 文件就能完美解析了
+这样 `.vue` 文件就能完美解析了
 
 ## ts
 
-虽然在第一节我们已经介绍过使用 ts-loader 处理 ts 文件，但是这会存在一个问题：该 loader 是把 typeScript 转换成 javaScript, 只负责新语法的转换，新增的 API 不会自动添加 polyfill
+虽然在第一节我们已经介绍过使用 `ts-loader` 处理 `ts` 文件，但是这会存在一个问题：该 `loader` 是把 `typeScript` 转换成 `javaScript` , 只负责新语法的转换，新增的 API 不会自动添加 `polyfill`
 
-为了解决这个问题，我们还是要祭出 babel
+为了解决这个问题，我们还是要祭出 `babel`
 
-babel 是一个工具链，主要用于旧浏览器或者环境中将 ECMAScript 2015+代码转换为向后兼容版本的
-JavaScript，包括语法转换、源代码转换等。关注社区的小伙伴可能知道，从 babel7 开始 babel 已经支持 ts 的编译，所以 ts-loader 可以弃用了
+`babel` 是一个工具链，主要用于旧浏览器或者环境中将 `ECMAScript 2015+` 代码转换为向后兼容版本的
+`javaScript` ，包括语法转换、源代码转换等
 
-安装 babel 相关依赖：
+关注社区的小伙伴可能知道，从 `babel7` 开始 `babel` 已经支持 `ts` 的编译，所以 `ts-loader` 可以弃用了
+
+安装 `babel` 相关依赖：
 
 ```cmd
 npm i babel-loader @babel/core @babel/preset-env @babel/preset-typescript -D
 ```
 
-修改 webpack.base.js
+修改 `webpack.base.js` ：
 
 ```js
 module.epxorts = {
@@ -486,7 +492,7 @@ module.epxorts = {
 };
 ```
 
-添加 babel.config.js 文件：
+在项目根目录添加 `babel.config.js` 文件：
 
 ```js
 module.exports = {
@@ -502,32 +508,40 @@ module.exports = {
 };
 ```
 
-现在可以安心的卸载 ts-loader 了
+现在可以安心的卸载 `ts-loader` 了
 
 ## scss
 
-给 App.vue 文件添加样式，使用了 scss，不出意外的报错了，因为缺少相应的 loader
+给 `App.vue` 文件添加样式，我使用了 `scss`，不出意外的报错了，因为缺少相应的 `loader`
 
 ```cmd
 npm i css-loader style-loader postcss-loader postcss-preset-env sass-loader sass -D
 ```
 
-添加配置文件
+在 `webpack.base.js` 中添加配置：
 
 ```js
-{
-  test: /\.(sa|sc|c)ss$/,
-  use: ["style-loader", "css-loader", "postcss-loader", "sass-loader"],
-},
+module.exports = {
+  // ...
+  module: {
+    rules: [
+      {
+        test: /\.(sa|sc|c)ss$/,
+        use: ["style-loader", "css-loader", "postcss-loader", "sass-loader"],
+      },
+    ],
+  },
+  // ...
+};
 ```
 
-这里需要强调一下 loader 的应用顺序是从右往左，从下往上的
+这里需要强调一下 `loader` 的应用顺序是从右往左，从下往上的
 
-postcss 是一个加工样式文件的工具，可以提供自动添加样式前缀、修改单位等功能，具体使用了什么功能取决于你提供了哪些 postcss 插件，这些插件可以直接配置在 loader 中，更好的做法是在项目的根目录提供一份单独的配置文件
+`postcss` 是一个加工样式文件的工具，可以提供自动添加样式前缀、修改单位等功能，具体使用了什么功能取决于你提供了哪些 `postcss` 插件，这些插件可以直接配置在 `loader` 中，更好的做法是在项目的根目录提供一份单独的配置文件
 
-在一些陈旧的项目中可能会看到`autoprefixer`这个插件，现在我们可以直接使用 postcss-preset-env 这个插件，自动添加前缀的功能已经包含在了其中
+在一些陈旧的项目中可能会看到 `autoprefixer` 这个插件，现在我们可以直接使用 `postcss-preset-env` 这个插件，自动添加前缀的功能已经包含在了其中
 
-postcss.config.js
+在项目根目录下新增 `postcss.config.js` 配置文件：
 
 ```js
 module.exports = {
@@ -535,20 +549,20 @@ module.exports = {
 };
 ```
 
-如果在项目中你选择了 less，只需安装 less-loader，再修改少量的配置即可
+如果在项目中你选择了 `less` ，只需安装 `less-loader` ，再修改少量的配置即可
 
 ## img
 
-在 webpack5 之前，加载图片、字体等资源需要我们使用 url-load file-loader 等来处理
+在 `webpack5` 之前，加载图片、字体等资源需要我们使用 `url-loader`、 `file-loader` 等来处理
 
-从 webpack5 开始，我们可以使用内置的资源模块类型（asset module type），来替代这些 loader 的工作
+从 `webpack5` 开始，我们可以使用内置的资源模块类型 [Asset Modules type](https://webpack.js.org/guides/asset-modules/)，来替代这些 `loader` 的工作
 
-资源模块类型（asset module type）分为四种：
+资源模块类型 `Asset Modules type` 分为四种：
 
-- asset/resource 发送一个单独的文件并导出 URL。之前通过使用 file-loader 实现；
-- asset/inline 导出一个资源的 data URI。之前通过使用 url-loader 实现；
-- asset/source 导出资源的源代码。之前通过使用 raw-loader 实现；
-- asset 在导出一个 data URI 和发送一个单独的文件之间自动选择。之前通过使用 url-loader，并且配置资源体积限制实现
+- `asset/resource` 发送一个单独的文件并导出 URL，之前通过使用 `file-loader` 实现
+- `asset/inline` 导出一个资源的 data URI，之前通过使用 `url-loader` 实现
+- `asset/source` 导出资源的源代码，之前通过使用 `raw-loader` 实现
+- `asset` 在导出一个 data URI 和发送一个单独的文件之间自动选择，之前通过使用 `url-loader` 实现，并且可以配置资源体积限制
 
 ```js
 module.epxorts = {
@@ -566,11 +580,11 @@ module.epxorts = {
 };
 ```
 
-需要注意的是这里的 `[ext]` 扩展名通配符包含了`.`，我们不需要额外再写，跟别的 loader 有所区别
+需要注意的是这里的 `[ext]` 扩展名通配符包含了 `.` ，我们不需要额外再写，跟别的 `loader` 有所区别
 
 ## font
 
-同上，这里不在赘述
+同上，这里不再赘述
 
 ```js
 module.epxorts = {
@@ -590,7 +604,7 @@ module.epxorts = {
 
 # 五、其他
 
-## 注入环境变量
+## 1. 注入环境变量
 
 为了跨终端设置环境变量，我们使用 cross-env 这个工具
 
@@ -611,7 +625,7 @@ npm i cross-env -D
 
 这样在 webpack 的配置文件中，可以通过`process.env.NODE_ENV`读取到当前设置的环境变量，我们可以根据这个变量来做一些配置优化
 
-## 提取样式文件
+## 2. 提取样式文件
 
 webpack 官方文档中有这样一段描述：
 
@@ -660,7 +674,7 @@ module.exports = merge(baseConfig, {
 
 这样在开发环境，我们依然使用 style-loader 有更高的开发效率
 
-## 自动拷贝文件
+## 3. 自动拷贝文件
 
 当某些文件不需要经过 webpack 打包而直接使用，如一些三方脚本 js 文件等等，我们可以使用`copy-webpack-plugin`这个插件直接进行文件的拷贝
 
@@ -710,7 +724,7 @@ Content not from webpack is served from D:\github-workspaces\webapck-ts-vue
 
 然后再根据我们在 index.html 配置的`./public/lodash.min.js`路径，就能正确找到静态资源的位置
 
-## 清理打包目录
+## 4. 清理打包目录
 
 在 webpack5 之前，我们都习惯于使用一款名叫 clean-webpack-plugin 的插件清理 dist 目录，从 webpack5 开始自带了清理打包目录的功能，只需在生产环境的配置文件中增加一个配置即可
 
@@ -722,7 +736,7 @@ module.exports = merge(baseConfig, {
 });
 ```
 
-## 省略拓展名
+## 5. 省略拓展名
 
 `extensions` 配置项的功能是解析到文件时自动添加扩展名，其默认值为 `['.wasm', '.mjs', '.js', '.json']` ，我们可以根据需求将 `.vue` 也加入其中，虽然会带来一些便利，但实际上会在一定程度上影响 `webpack` 的运行效率，不推荐修改
 
@@ -734,7 +748,7 @@ module.exports = {
 };
 ```
 
-## 设置路径别名
+## 6. 设置路径别名
 
 `alias` 是一个非常和好用的配置项，当我们项目的目录结构比较深时，或者一个文件的路径可能需要 `../../` 这种路径片段才能访问到的时候，我们可以给一些常用的路径设置别名
 
@@ -756,7 +770,7 @@ module.exports = {
 import App from "@/App.vue";
 ```
 
-## 友好打包提示
+## 7. 友好打包提示
 
 现在 webpack 原生的控制台输出已经挺好看的了，都是些有用的信息，没必要用这个了，而且刚刚去它的仓库搂了一眼，上一次更新已经是三年前了，装不装大家随意吧
 
@@ -776,7 +790,7 @@ modules.exports = {
 };
 ```
 
-## 包文件分析
+## 8. 包文件分析
 
 ```cmd
 npm i webpack-bundle-analyzer -D
@@ -1016,3 +1030,34 @@ npx lint-staged
 写这篇文章更主要的原因是自己最近在复习，巩固基础，现在正好学到了 webpack 部分，就顺手做一些总结，供自己以后回顾。如果碰巧你正好也能用得上，那我万分欣喜
 
 本人工作于杭州，活跃于长三角一带，如果有需要的话可以加我微信：iseeyexin，我们可以互相交流，共同进步
+
+```
+webpack5-ts-vue
+├── README.md
+├── babel.config.js
+├── config
+│   ├── webpack.base.js
+│   ├── webpack.dev.js
+│   └── webpack.prod.js
+├── index.html
+├── lint-staged.config.js
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public
+│   ├── favicon.ico
+│   └── lodash.min.js
+├── src
+│   ├── App.vue
+│   ├── assets
+│   │   ├── fonts
+│   │   │   ├── iconfont.css
+│   │   │   ├── iconfont.ttf
+│   │   │   ├── iconfont.woff
+│   │   │   └── iconfont.woff2
+│   │   └── images
+│   │       └── test.jpg
+│   ├── index.ts
+│   └── shims-vue.d.ts
+└── tsconfig.json
+```
