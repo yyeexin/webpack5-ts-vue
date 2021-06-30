@@ -63,9 +63,7 @@ echo "const myName: string = \"和光不同尘\";" > index.ts
 }
 ```
 
-在命令行中运行 `npm run build` ，发现报错了
-
-阅读报错信息可知，`webpack` 没有找到正确的入口文件，并且告诉我们 `webpack` 查找入口文件的默认顺序是：
+在命令行中运行 `npm run build` ，发现报错了。阅读报错信息可知，`webpack` 没有找到正确的入口文件，并且告诉我们 `webpack` 查找入口文件的默认顺序是：
 
 ```
 src.js
@@ -111,9 +109,7 @@ module.exports = {
 
 在生成的 `dist` 目录中点开 `main.js` 文件，发现其中空空如也
 
-这是因为 `webpack` 默认以 `production` 模式运行，会使用 `tree-shaking` 功能对文件内容进行优化
-
-而我们在 `index.ts` 中只有一条声明语句，且并没有使用这个声明的变量，`webpack` 的树摇功能自动删去了这行无用的声明语句，结果就是打包的文件是空文件
+这是因为 `webpack` 默认以 `production` 模式运行，会使用 `tree-shaking` 功能对文件内容进行优化。而我们在 `index.ts` 中只有一条声明语句，且并没有使用这个声明的变量，`webpack` 的树摇功能自动删去了这行无用的声明语句，结果就是打包的文件是空文件
 
 我们可以手动声明以 `development` 模式运行：
 
@@ -193,9 +189,7 @@ const isInclude = ["a", "b", "c"].includes("a");
 console.log(isInclude);
 ```
 
-再次运行打包命令，`dist` 目录下生成了 `index.html` 和 `main.js` 两个文件，使用 `VSCode` 的 `live server` 插件或其他能够在本地开启静态资源服务器的工具打开 `index.html` 文件
-
-打开控制台，可以看到在控制台成功输入了预期的结果：
+再次运行打包命令，`dist` 目录下生成了 `index.html` 和 `main.js` 两个文件，使用 `VSCode` 的 `live server` 插件或其他能够在本地开启静态资源服务器的工具打开 `index.html` 文件，打开控制台，可以看到在控制台成功输入了预期的结果：
 
 ```js
 "和光不同尘";
@@ -205,9 +199,7 @@ console.log(isInclude);
 true;
 ```
 
-这样基础的打包流程就完成了
-
-现在的项目结构如下：
+这样基础的打包流程就完成了，现在的项目结构如下：
 
 ```
 webpack5-ts-vue
@@ -233,7 +225,8 @@ npm i webpack-dev-server -D
 ```js
 module.exports = {
   // ...
-  // webpack升级到5.0后，target默认值值会根据package.json中的browserslist改变，导致devServer的自动更新失效，所以development环境下直接配置成web
+  // webpack升级到5.0后，target默认值值会根据package.json中的browserslist改变，导致devServer的自动更新失效
+  // 所以 development 环境下直接配置成 web
   target: "web",
   devServer: {
     hot: true, // 启用热模块替换
@@ -255,9 +248,7 @@ module.exports = {
 
 这样我们运行 `npm run serve` 开发命令后，默认浏览器会自动打开，当我们修改了文件的内容时，浏览器也会自动刷新
 
-这里我们详细解释一下在实际开发中非常常用的 `proxy` 配置项，它的作用是设置代理，解决开发环境中的跨域问题
-
-其原理是将我们本地发出的请求通过一个中间代理服务器，转发到真正的接口服务器，服务器之间的通信是没有跨域问题的
+这里我们详细解释一下在实际开发中非常常用的 `proxy` 配置项，它的作用是设置代理，解决开发环境中的跨域问题。其原理是将我们本地发出的请求通过一个中间代理服务器，转发到真正的接口服务器，服务器之间的通信是没有跨域问题的
 
 `proxy` 常用配置项如下：
 
@@ -363,11 +354,11 @@ module.exports = merge(baseConfig, {
 
 这样就简单地对配置文件进行了环境上的区分，后续的各种工作只不过是根据不同的需求在不同的配置文件中添加配置而已，当然实际项目中的配置文件要比案例中复杂的多
 
-需要注意的是，配置文件中的路径并没有因为将配置文件放进更深一层的 `config` 文件夹而修改，这是因在 `webpack` 配置中有一个 `context` 属性，该属性用来解析入口（entry point）和加载器（loader），其默认值是 `webpack` 的启动目录，一般就是项目的根目录
+需要注意的是，配置文件中的路径并没有因为将配置文件放进更深一层的 `config` 文件夹而修改，这是因在 `webpack` 配置中有一个 `context` 属性，该属性用来解析入口 `entry point` 和加载器 `loader` ，其默认值是 `webpack` 的启动目录，一般就是项目的根目录
 
 # 四、打包各类文件
 
-`webpack` 是一个 `js` 文件打包工具，其他类型的文件一般都需要通过额外的加载器（loader）来实现解析和打包
+`webpack` 是一个 `js` 文件打包工具，其他类型的文件一般都需要通过额外的加载器 `loader` 来实现解析和打包，下面我们具体来看
 
 ## 1. vue
 
@@ -449,13 +440,21 @@ module.exports = {
 为了解决这个问题，需要给 `ts-loader` 添加一个配置项：
 
 ```js
-{
-  test: /\.ts$/,
-  loader: "ts-loader",
-  exclude: /node_modules/,
-  options: {
-    appendTsSuffixTo: [/\.vue$/],
+module.exports = {
+  // ...
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        loader: "ts-loader",
+        exclude: /node_modules/,
+        options: {
+          appendTsSuffixTo: [/\.vue$/],
+        },
+      },
+    ],
   },
+  // ...
 };
 ```
 
@@ -475,12 +474,8 @@ declare module "*.vue" {
 
 虽然在第一节我们已经介绍过使用 `ts-loader` 处理 `ts` 文件，但是这会存在一个问题：该 `loader` 是把 `typeScript` 转换成 `javaScript` , 只负责新语法的转换，新增的 API 不会自动添加 `polyfill`
 
-为了解决这个问题，我们还是要祭出 `babel`
-
-`babel` 是一个工具链，主要用于旧浏览器或者环境中将 `ECMAScript 2015+` 代码转换为向后兼容版本的
-`javaScript` ，包括语法转换、源代码转换等
-
-关注社区的小伙伴可能知道，从 `babel7` 开始 `babel` 已经支持 `ts` 的编译，所以 `ts-loader` 可以弃用了
+为了解决这个问题，我们还是要祭出 `babel`。`babel` 是一个工具链，主要用于旧浏览器或者环境中将 `ECMAScript 2015+` 代码转换为向后兼容版本的
+`javaScript` ，包括语法转换、源代码转换等。关注社区的小伙伴可能知道，从 `babel7` 开始 `babel` 已经支持 `ts` 的编译，所以 `ts-loader` 可以弃用了
 
 安装 `babel` 相关依赖：
 
@@ -1117,7 +1112,7 @@ npx lint-staged
 
 # 写在最后
 
-到这里 webpack 基础的东西就写完了，我会的也就只有这些，囿于本人有限的技术水平，文章中肯定存在不少疏漏和没有讲清楚的地方，欢迎各位批评指正
+到这里 webpack 基础的东西就写完了，囿于本人有限的技术水平，文章中肯定存在不少疏漏和没有讲清楚的地方，欢迎各位批评指正
 
 尽管如此以上内容还是花费了我不少气力，原因还是 webpack 工具链流程太长，每个工具都包含大量的配置项，想把每个配置的具体作用都摸清楚实在不是一件容易的事，本文只介绍了其中一些最核心最常用的配置和插件，难怪有人调侃有 `webpack 配置工程师` 这么一说
 
