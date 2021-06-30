@@ -18,6 +18,10 @@ Hello，大家好，我是和光不同尘，一个你肯定还没有听说过的
 
 废话不多说，我们这就操练起来
 
+代码我放在了这个仓库：[webpack5-ts-vue](https://github.com/yyeexin/webpack5-ts-vue)
+
+有需要的话可以自行取用
+
 # 一、基础打包
 
 第一部分先带大家回忆一下 `webpack` 的基础打包流程，我知道这些大家肯定都会的，我只是带大家回忆一下
@@ -428,7 +432,7 @@ module.exports = {
 npm i @vue/compiler-sfc -D
 ```
 
-另外，还需要配置对应的 `vue` 插件：
+另外，还需要配置对应的 `vue` 插件，它的作用是将你定义过的 `js`、 `css` 等规则应用到 `.vue` 文件中去：
 
 ```js
 const { VueLoaderPlugin } = require("vue-loader");
@@ -615,9 +619,9 @@ module.epxorts = {
 };
 ```
 
-# 五、其他
+# 五、其他配置
 
-接着再介绍一些让 `webpack` 更好用的工具和插件
+接着再介绍一些让 `webpack` 更好用的配置和插件
 
 ## 1. 注入环境变量
 
@@ -859,6 +863,60 @@ module.exports = {
 
 运行 `npm run analyze` 即可自动打开包文件分析页面
 
+## 9. 文件缓存
+
+`webpack5` 之前我们常用 `cache-loader` 、`hard-source-webpack-plugin` 做文件缓存，加速二次构建， `webpack5` 现在内置了这种能力，默认会把编译的结果缓存到内存中，通过配置还可以缓存到文件系统中
+
+修改 `webpack.base.js`：
+
+```js
+module.exports = {
+  // ...
+  cache: {
+    type: "filesystem",
+  },
+  // ...
+};
+```
+
+## 10. 代码分隔
+
+`webpack` 默认会把所有的依赖打包到一个 `js` 文件当中，这个文件的大小会随着项目内容的增长而线性增大，导致浏览器加载变慢，可以使用代码分隔的方法来缓解这个问题
+
+在 `webpack.prod.js` 中新增配置：
+
+```js
+module.exports = {
+  // ...
+  optimization: {
+    splitChunks: {
+      // 选择对哪些文件进行拆分，默认是async，即只对动态导入的文件进行拆分
+      chunks: "all",
+      // 提取chunk的最小体积
+      minSize: 20000,
+      // 要提取的chunk最少被引用次数
+      minChunks: 1,
+      // 对要提取的trunk进行分组
+      cacheGroups: {
+        // 匹配node_modules中的三方库，将其打包成一个trunk
+        defaultVendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: "vendors",
+          priority: -10,
+        },
+        default: {
+          // 将至少被两个trunk引入的模块提取出来打包成单独trunk
+          minChunks: 2,
+          name: "default",
+          priority: -20,
+        },
+      },
+    },
+  },
+  // ...
+};
+```
+
 # 六、代码规范
 
 啊，你不喜欢用 eslint？企业级项目，别人都用，你确定不要吗？你确定吗？
@@ -909,10 +967,11 @@ module.exports = {
     sourceType: "module",
   },
   plugins: ["vue", "@typescript-eslint"],
+  // extends的优先级也是从后往前的
   extends: [
-    "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:vue/vue3-recommended",
+    "eslint:recommended",
   ],
   rules: {
     "@typescript-eslint/no-explicit-any": "off",
@@ -979,9 +1038,9 @@ node_modules
 module.exports = {
   // ...
   extends: [
-    "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:vue/vue3-recommended",
+    "eslint:recommended",
     "plugin:prettier/recommended",
   ],
   // ...
@@ -1056,56 +1115,15 @@ npx lint-staged
 
 现在每当你执行 `commit` 操作时，都会自动执行 `lint-staged` 做规则校验，如果 `lint` 没有通过，则会 `abort` 当前的 `commit` 操作，直到你修复完了所有的 `error` 才能成功提交
 
-# 七、代码仓库
+# 写在最后
 
-现在完整的项目结构如下：
+到这里 webpack 基础的东西就写完了，我会的也就只有这些，囿于本人有限的技术水平，文章中肯定存在不少疏漏和没有讲清楚的地方，欢迎各位批评指正
 
-```
-webpack5-ts-vue
-├── .husky
-|   └── pre-commit
-├── config
-│   ├── webpack.base.js
-│   ├── webpack.dev.js
-│   └── webpack.prod.js
-├── public
-│   ├── favicon.ico
-│   └── lodash.min.js
-├── src
-│   ├── assets
-│   │   ├── fonts
-│   │   └── images
-│   ├── App.vue
-│   ├── index.ts
-│   └── shims-vue.d.ts
-├── .eslintignore
-├── .eslintrc.js
-├── .gitignore
-├── .prettierignore
-├── .prettierrc
-├── babel.config.js
-├── index.html
-├── lint-staged.config.js
-├── package-lock.json
-├── package.json
-├── postcss.config.js
-├── README.md
-└── tsconfig.json
-```
+尽管如此以上内容还是花费了我不少气力，原因还是 webpack 工具链流程太长，每个工具都包含大量的配置项，想把每个配置的具体作用都摸清楚实在不是一件容易的事，本文只介绍了其中一些最核心最常用的配置和插件，难怪有人调侃有 `webpack 配置工程师` 这么一说
 
-代码我放在了这个仓库：[webpack5-ts-vue](https://github.com/yyeexin/webpack5-ts-vue)
+我们也能大致预料到，自己配置出来的项目大概率是一个次优化的产物，肯定还存在大量改进的空间。`因此我更愿意相信社区的力量，在实际工作过程中使用社区里更成熟的工具`，它们有全职的开发者维护，投入的精力肯定比我个人甚至是绝大多数像我一样的普通开发者多得多，经过社区的检验后是相当靠谱的
 
-有需要的话可以自行取用
-
-# 八、写在最后
-
-到这里 `webpack` 基础的东西就写完了，我会的也就只有这些，囿于本人有限的技术水平，文章中肯定存在不少疏漏和没有讲清楚的地方，欢迎各位批评指正
-
-尽管如此以上内容还是花费了我不少气力，写作过程中需要大量的测试和验证，生怕误人子弟。究其原因还是 `webpack` 工具链流程太长，每个工具都包含大量的配置，想把每个配置的具体作用都摸清楚实在不是一件容易的事，本文只介绍了其中一些最核心最常用的配置和插件，难怪有人调侃有 `webpack 配置工程师` 这么一说
-
-我们也能大致预料到，自己配置出来的项目大概率是一个次优化的产物，肯定还存在大量改进的空间。既然如此我更愿 `意相信社区的力量，在实际工作过程中使用社区里更成熟的工具` ，它们有全职的开发者维护，投入的精力肯定比我个人甚至是绝大多数像我一样的普通开发者多得多，经过社区的检验后是相当靠谱的，我们没有必要钻牛角尖
-
-写这篇文章主要是自己最近在复习，巩固基础，现在正好学到了 `webpack` 部分，就顺手做一些总结，供自己以后回顾或者说为面试准备。如果碰巧帮助到了你，那我万分欣喜
+写这篇文章主要是自己最近在复习，巩固基础，现在正好学到了 webpack 部分，就顺手做一些总结，为自己以后面试做准备。如果碰巧帮助到了你，那我万分欣喜
 
 本人工作于杭州，活跃于长三角一带，如果想交个朋友或有进一步交流的需要的话，可以加我微信：iseeyexin
 

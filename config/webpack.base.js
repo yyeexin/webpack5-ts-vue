@@ -7,6 +7,9 @@ const devMode = process.env.NODE_ENV !== "production";
 
 module.exports = {
   entry: "./src/index.ts",
+  cache: {
+    type: "filesystem",
+  },
   module: {
     rules: [
       {

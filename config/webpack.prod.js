@@ -19,4 +19,23 @@ module.exports = merge(baseConfig, {
       generateStatsFile: true,
     }),
   ],
+  optimization: {
+    splitChunks: {
+      chunks: "all",
+      minSize: 20000,
+      minChunks: 1,
+      cacheGroups: {
+        defaultVendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: "vendors",
+          priority: -10,
+        },
+        default: {
+          minChunks: 2,
+          name: "default",
+          priority: -20,
+        },
+      },
+    },
+  },
 });
