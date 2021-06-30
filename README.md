@@ -1032,6 +1032,7 @@ node_modules
 ```js
 module.exports = {
   // ...
+  plugins: ["vue", "@typescript-eslint", "prettier"],
   extends: [
     "plugin:@typescript-eslint/recommended",
     "plugin:vue/vue3-recommended",
@@ -1120,6 +1121,6 @@ npx lint-staged
 
 写这篇文章主要是自己最近在复习，巩固基础，现在正好学到了 webpack 部分，就顺手做一些总结，为自己以后面试做准备。如果碰巧帮助到了你，那我万分欣喜
 
-本人工作于杭州，活跃于长三角一带，如果想交个朋友或有进一步交流的需要的话，可以加我微信：iseeyexin
+本人工作于杭州，活跃于长三角一带，如果想交个朋友或有进一步交流的需要的话，可以加我微信：imheguang
 
 我是和光，让我们共同进步，变得更强

@@ -9,7 +9,7 @@ module.exports = {
     parser: "@typescript-eslint/parser",
     sourceType: "module",
   },
-  plugins: ["vue", "@typescript-eslint"],
+  plugins: ["vue", "@typescript-eslint", "prettier"],
   extends: [
     "plugin:@typescript-eslint/recommended",
     "plugin:vue/vue3-recommended",
